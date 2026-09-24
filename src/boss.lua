@@ -16,7 +16,7 @@ end
 function boss_start()
  bv=min(lvl,7)
  bx,by,bhp,bmode=52,-16,48,"enter"
- bp0,bspd=bv*5%16+1,1+bv*.08
+ bp0,bspd,bdir,bdodge=bv*5%16+1,1+bv*.08,1,0
  btime,bwt,bwc,bcyc,bfire,bvol,bflash,bset,banim,b6=0,180,0,0,0,0,0,0,0,0
  bwave,bfail=false,false
  -- level 2's boss has a wider weak spot
@@ -86,13 +86,16 @@ function boss_update()
    end
   end
  elseif bmode=="slide" then
-  -- boss 3: sink to the bottom, slide under the player, rise
+  -- boss 3: sink to the bottom, slide along it, rise again, steering
+  -- towards the player all the way to ram them
+  bx=approach(bx,tx,1.2)
   if bph==0 then
    by+=1.67
-   if (by>=112) by,bph,bsx=112,1,tx
+   if (by>=112) by,bph,bsx=112,1,0
   elseif bph==1 then
-   bx=approach(bx,bsx,1.2)
-   if (bx==bsx) bph=2
+   -- chase along the bottom until lined up (or 1.5s)
+   bsx+=1
+   if (abs(bx-tx)<1 or bsx>90) bph=2
   else
    by-=1.67
    if (by<=8) by,bmode,bpiv=8,"pivot",bp0
@@ -100,7 +103,22 @@ function boss_update()
  else
   local x,y=bpx[bpiv],bpy[bpiv]
   bx,by=approach(bx,x,1.2*bspd),approach(by,y,1.1*bspd)
-  if (bx==x and by==y) bpiv=bpiv%16+1
+  if (bx==x and by==y) bpiv=(bpiv-1+bdir)%16+1
+  -- dodge: a shot lined up under the weak spot may make the boss turn
+  -- back along its tour (50%), then not again for 1.5s so it can't buzz
+  bdodge-=1
+  if bdodge<=0 then
+   for s in all(shots) do
+    if abs(s.x+4-bx-bwx-bww/2)<8 and s.y>by and s.y<by+48 then
+     bdodge=20
+     if rnd(1)<.5 then
+      bdir,bdodge=-bdir,90
+      bpiv=(bpiv-1+bdir)%16+1
+     end
+     break
+    end
+   end
+  end
  end
 
  -- attacks only while touring: 3-volley bursts from the twin guns,

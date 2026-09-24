@@ -93,6 +93,13 @@ music cut down to fit a single cart.
   frames, they tour 16 pivots (reaching further down the screen, faster on
   later levels), ramming one costs 12 health instead of 4, and a hit makes a
   sound.
+- Bosses sometimes dodge: a shot lined up under the weak spot has a 50%
+  chance to make the boss reverse along its tour, at most once every 1.5 s.
+- The level 3 boss steers towards the player through its whole
+  sink-slide-rise attack, trying to ram them.
+- Type 4 enemies dive 1.5x faster.
+- Zig-zag (type 0) waves are centred on the player's position when they
+  spawn, instead of a random column.
 - 64 slots for enemy bullets, asteroids, pickups and explosions (the
   original had 32), so full bullet rings come out.
 - Level and boss music have no drums; channel 3 is kept for sound effects.

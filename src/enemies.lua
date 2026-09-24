@@ -86,7 +86,8 @@ function new_wave()
    vx=wvar==0 and es or -es}
   add(groups,grp)
  end
- worig=18+rnd(84)
+ -- zig-zag waves are centred on the player
+ worig=mid(28,px,92)
  wshots=1+flr(rnd(2))
 end
 
@@ -194,7 +195,7 @@ function enemy_move(e)
   if ph==0 then
    e.y+=es
    if e.tm<=0 then
-    e.vx,e.vy=aim(e.x,e.y,px,py,ed)
+    e.vx,e.vy=aim(e.x,e.y,px,py,ed*1.5)
     e.ph=1
    end
   else
