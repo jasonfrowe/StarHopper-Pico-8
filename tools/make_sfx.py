@@ -24,10 +24,17 @@ CART = os.path.join(ROOT, "starhopper.p8")
 
 C5, E5, G5, C6, E6 = 523.25, 659.25, 783.99, 1046.50, 1318.51
 
+
+def hz(name):
+    """Note name like "C5", "D#4" -> Hz."""
+    n = "C C# D D# E F F# G G# A A# B".split().index(name[:-1])
+    return 440 * 2 ** ((n - 9) / 12 + int(name[-1]) - 4)
+
 # waveforms: 0 tri, 1 tilted saw, 2 saw, 3 square, 4 pulse, 5 organ, 6 noise, 7 phaser
 # segments: ("sweep", hz0, hz1, ms, vol0, vol1)  linear pitch and volume glide
 #           ("rest", ms)
 #           ("trem", hz, tl_curve, step_ms, cycles, vol)  OPL total-level flutter
+#           ("arp", "C6 G5 ...", ms_each, vol0, vol1)  stepped notes, volume ramps across them
 def chime(notes, on_ms, vol):
     segs = []
     for f in notes:
@@ -42,9 +49,11 @@ SFX = [
     (54, "tally", 2, 1, 0, [("sweep", 440, 1320, 140, 5, 3)]),
     (55, "pickup", 2, 1, 0, [("sweep", 440, 1320, 140, 7, 5)]),
     (56, "lowenrgy", 2, 2, 1, [("sweep", 660, 660, 90, 6, 6), ("rest", 60), ("sweep", 660, 660, 90, 6, 6)]),
-    (57, "enmydie", 3, 2, 6, [("sweep", 500, 120, 160, 7, 3)]),
-    (58, "plyrhit", 4, 1, 2, [("sweep", 220, 90, 80, 7, 5)]),
-    (59, "plyrdie", 4, 3, 6, [("sweep", 700, 60, 650, 7, 2)]),
+    # the destroyed/hit sounds are tuneful arcade arpeggios rather than the
+    # original's noisy FM sweeps
+    (57, "enmydie", 3, 1, 4, [("arp", "C6 A5 F5 D5 A4", 25, 7, 4)]),
+    (58, "plyrhit", 4, 1, 3, [("arp", "E5 C5 G4", 35, 7, 5)]),
+    (59, "plyrdie", 4, 3, 3, [("arp", "C6 G5 D#5 C5 G4 D#4 C4 G3 D#3 C3", 60, 7, 2)]),
     (60, "xtralife", 4, 3, 5, [("trem", 740, (0, 1, 2, 3, 5, 8, 12, 16, 12, 8, 5, 3, 2, 1, 0), 9, 6, 7)]),
     (61, "lvlclear", 4, 3, 5, chime((C5, E5, G5, C6), 140, 7)),
     (62, "victory", 4, 6, 5, chime((C5, E5, G5, C6, G5, C6), 130, 7)
@@ -53,7 +62,8 @@ SFX = [
 
 
 def seg_ms(s):
-    return {"sweep": lambda: s[3], "rest": lambda: s[1], "trem": lambda: len(s[2]) * s[3] * s[4]}[s[0]]()
+    return {"sweep": lambda: s[3], "rest": lambda: s[1], "trem": lambda: len(s[2]) * s[3] * s[4],
+            "arp": lambda: len(s[1].split()) * s[2]}[s[0]]()
 
 
 def sample(segs, t_ms):
@@ -64,6 +74,8 @@ def sample(segs, t_ms):
             k = t_ms / d
             if s[0] == "sweep":
                 return s[1] + (s[2] - s[1]) * k, s[4] + (s[5] - s[4]) * k
+            if s[0] == "arp":
+                return hz(s[1].split()[int(t_ms // s[2])]), s[3] + (s[4] - s[3]) * k
             if s[0] == "trem":
                 tl = s[2][int(t_ms // s[3]) % len(s[2])]
                 return s[1], s[5] * (1 - tl / 24)

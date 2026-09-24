@@ -45,6 +45,11 @@ function hud_draw()
  print(score_str(),1,1,10)
  -- health bar: 48hp in 24px, red when low
  rect(51,1,76,5,5)
+ -- speed (blue) and power (red) pickups collected, 4 pips each
+ for i=1,4 do
+  if (i<=(pspd-pspd0)/.1125+.5) rectfill(25+i*3,1,26+i*3,2,12)
+  if (i<=20-prate) rectfill(25+i*3,4,26+i*3,5,8)
+ end
  if (php>0) rectfill(52,2,51+php/2,4,php<=12 and 8 or 11)
  print("x"..mult,84,1,mult>1 and 9 or 5)
  spr(16,108,-1)

@@ -5,7 +5,8 @@ Every tune uses the same OPL2 channel layout:
   CH0 lead, CH1 lead/arp, CH2 bass, CH3 kick, CH4 snare, CH5 hi-hat, CH6 pad
 PICO-8 has four channels, so they are mapped to:
   P0 = CH0 lead, P1 = CH1 arp, P2 = CH2 bass,
-  P3 = drums (CH3-5 merged, one hit per row: snare > kick > hat)
+  P3 = drums (CH3-5 merged, one hit per row: snare > kick > hat), except in
+       level and boss tunes (NO_DRUMS), where P3 is left for sound effects
 The pad (CH6) is dropped unless --pad is given, in which case it plays on P1
 in rows where the arp is silent.
 
@@ -125,7 +126,12 @@ def drum_notes(events, row, nrows):
     return out
 
 
-def convert(path, pad=False):
+# Tunes that play under gameplay leave P3 empty: the drums are dropped so
+# the sound effects have channel 3 to themselves.
+NO_DRUMS = ("level_", "boss")
+
+
+def convert(path, pad=False, drums=True):
     events, total, _ = read_vgm(path)
     row = row_length(events)
     ticks = round(row / SAMPLES_PER_TICK)
@@ -135,7 +141,7 @@ def convert(path, pad=False):
     if pad:
         padn = to_pico_notes(melodic_rows(events, 6, row, nrows), PAD_VOICE)
         chans[1] = [a if a != EMPTY else p for a, p in zip(chans[1], padn)]
-    chans[3] = drum_notes(events, row, nrows)
+    chans[3] = drum_notes(events, row, nrows) if drums else [EMPTY] * nrows
 
     sfx, index, patterns = [], {}, []
     for start in range(0, nrows, ROWS):
@@ -216,7 +222,8 @@ def main():
              if args.tune == "all" else [args.tune])
     os.makedirs(os.path.join(ROOT, "music"), exist_ok=True)
     for name in names:
-        song = convert(os.path.join(args.src, name + ".vgm"), pad=args.pad)
+        drums = not name.lower().startswith(NO_DRUMS)
+        song = convert(os.path.join(args.src, name + ".vgm"), pad=args.pad, drums=drums)
         out = os.path.join(ROOT, args.into) if args.into else os.path.join(ROOT, "music", name.lower() + ".p8")
         write_cart(song, out, args.sfx_limit)
 

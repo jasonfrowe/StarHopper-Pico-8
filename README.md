@@ -50,7 +50,7 @@ The OPL2 tunes share one channel layout, so the conversion is mechanical:
 | CH0 lead | P0, square |
 | CH1 lead/arp | P1, organ |
 | CH2 bass | P2, tilted saw |
-| CH3–5 kick, snare, hat | P3, merged; one hit per row, snare > kick > hat |
+| CH3–5 kick, snare, hat | P3, merged; one hit per row, snare > kick > hat. Left out of level and boss tunes, so P3 is free for sound effects during play |
 | CH6 pad | dropped (`--pad` plays it on P1 where the arp rests) |
 
 Each song is split into 32-row sfx, and repeated phrases are stored once.
@@ -66,9 +66,10 @@ PICO-8 waveform sounds. `MUSIC_GAIN`, the trims, waveforms and drum sounds
 are at the top of `tools/vgm2p8.py`.
 Re-run `python3 tools/vgm2p8.py all` after changing them.
 
-Sound effects live in sfx 52–62 of the main cart. They all play on channel 3,
-so they briefly replace the drums rather than the melody (the original had two
-extra channels just for effects). The original's priority tiers still apply:
+Sound effects live in sfx 52–62 of the main cart and play on channel 3, which
+the level and boss tunes leave empty. On the title, bonus and end screens they
+briefly replace the drums. The destroyed and hit sounds are tuneful arpeggios
+rather than the original's noisy FM sweeps. The original's priority tiers still apply:
 gunfire never cuts off an explosion or a fanfare.
 
 **Limitation:** PICO-8 only allows loading data from other carts (multi-cart)
