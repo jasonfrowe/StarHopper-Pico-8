@@ -9,7 +9,7 @@ def read_vgm(path):
     """Return (events, total_samples, loop_sample).
 
     events: list of (sample_time, kind, channel, value) where kind is
-    'on' (value = (midi_note, volume 0..1)) or 'off'.
+    'on' (value = (midi_note, carrier total level 0..63, 0 = loudest)) or 'off'.
     """
     b = open(path, "rb").read()
     assert b[:4] == b"Vgm ", path
@@ -71,6 +71,4 @@ def _note(regs, ch):
     block = (regs[0xB0 + ch] >> 2) & 7
     freq = fnum * 49716 / 2 ** (20 - block)
     midi = round(69 + 12 * math.log2(freq / 440)) if freq > 0 else 0
-    tl = regs[0x40 + CARRIER[ch]] & 63
-    vol = max(0.0, 1 - tl / 48)
-    return midi, vol
+    return midi, regs[0x40 + CARRIER[ch]] & 63

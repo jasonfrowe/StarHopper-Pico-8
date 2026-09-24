@@ -4,7 +4,9 @@
 The RP6502 effects are procedural OPL2 clips (RPDemo/tools/generate_sfx.py):
 pitch sweeps, re-struck chime notes and volume tremolos. They are described
 again here in the same terms (Hz, milliseconds) and sampled at PICO-8 note
-resolution; OPL envelopes become a linear volume ramp. Music owns sfx 0-51.
+resolution; OPL envelopes become a linear volume ramp. Music owns sfx 0-51
+and peaks at volume 5 (see MUSIC_GAIN in vgm2p8.py), so effects start at
+6-7 to sit on top of it.
 
 Slots are ordered by the original's priority tiers (fire < pickup/tally/low
 energy < enemy destroyed < player hit/die, extra life, fanfares), which
@@ -35,18 +37,18 @@ def chime(notes, on_ms, vol):
 
 # (slot, name, tier, speed, waveform, segments)
 SFX = [
-    (52, "plyrfire", 1, 1, 0, [("sweep", 900, 350, 70, 4, 2)]),
-    (53, "enmyfire", 1, 1, 0, [("sweep", 450, 200, 90, 3, 1)]),
-    (54, "tally", 2, 1, 0, [("sweep", 440, 1320, 140, 3, 2)]),
-    (55, "pickup", 2, 1, 0, [("sweep", 440, 1320, 140, 6, 4)]),
-    (56, "lowenrgy", 2, 2, 1, [("sweep", 660, 660, 90, 4, 4), ("rest", 60), ("sweep", 660, 660, 90, 4, 4)]),
-    (57, "enmydie", 3, 2, 6, [("sweep", 500, 120, 160, 6, 2)]),
-    (58, "plyrhit", 4, 1, 2, [("sweep", 220, 90, 80, 7, 4)]),
-    (59, "plyrdie", 4, 3, 6, [("sweep", 700, 60, 650, 7, 1)]),
-    (60, "xtralife", 4, 3, 5, [("trem", 740, (0, 1, 2, 3, 5, 8, 12, 16, 12, 8, 5, 3, 2, 1, 0), 9, 6, 6)]),
-    (61, "lvlclear", 4, 3, 5, chime((C5, E5, G5, C6), 140, 6)),
-    (62, "victory", 4, 6, 5, chime((C5, E5, G5, C6, G5, C6), 130, 6)
-     + [("trem", E6, (0, 2, 5, 9, 14, 9, 5, 2), 10, 8, 6)]),
+    (52, "plyrfire", 1, 1, 0, [("sweep", 900, 350, 70, 6, 3)]),
+    (53, "enmyfire", 1, 1, 0, [("sweep", 450, 200, 90, 5, 2)]),
+    (54, "tally", 2, 1, 0, [("sweep", 440, 1320, 140, 5, 3)]),
+    (55, "pickup", 2, 1, 0, [("sweep", 440, 1320, 140, 7, 5)]),
+    (56, "lowenrgy", 2, 2, 1, [("sweep", 660, 660, 90, 6, 6), ("rest", 60), ("sweep", 660, 660, 90, 6, 6)]),
+    (57, "enmydie", 3, 2, 6, [("sweep", 500, 120, 160, 7, 3)]),
+    (58, "plyrhit", 4, 1, 2, [("sweep", 220, 90, 80, 7, 5)]),
+    (59, "plyrdie", 4, 3, 6, [("sweep", 700, 60, 650, 7, 2)]),
+    (60, "xtralife", 4, 3, 5, [("trem", 740, (0, 1, 2, 3, 5, 8, 12, 16, 12, 8, 5, 3, 2, 1, 0), 9, 6, 7)]),
+    (61, "lvlclear", 4, 3, 5, chime((C5, E5, G5, C6), 140, 7)),
+    (62, "victory", 4, 6, 5, chime((C5, E5, G5, C6, G5, C6), 130, 7)
+     + [("trem", E6, (0, 2, 5, 9, 14, 9, 5, 2), 10, 8, 7)]),
 ]
 
 

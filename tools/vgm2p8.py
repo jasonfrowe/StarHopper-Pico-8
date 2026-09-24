@@ -33,22 +33,34 @@ SRC_DIR = "/Users/rowe/Software/rp6502/RPDemo/music"
 ROWS = 32
 SAMPLES_PER_TICK = 735  # 44100 / 60
 
+# Volumes follow the OPL2 mix: each note's carrier total level (TL, 0.75 dB
+# per step) becomes a PICO-8 volume, with TL 6 (the loudest the tunes use)
+# at MUSIC_GAIN. That keeps the music below 7, leaving room for the sound
+# effects on top. Each voice then has a trim for how loud its PICO-8
+# waveform sounds compared with the OPL2 original.
+MUSIC_GAIN = 5
+
 # PICO-8 waveforms: 0 tri, 1 tilted saw, 2 saw, 3 square, 4 pulse, 5 organ, 6 noise, 7 phaser
-# (waveform, max volume) for each melodic PICO-8 channel
-VOICES = {0: (3, 5), 1: (5, 4), 2: (1, 6)}
-PAD_VOICE = (0, 3)
-# drum hit -> (pitch, waveform, volume, effect); effects: 3 drop, 5 fade out.
-# Hat and snare are both noise: higher pitch sounds brighter and louder, so the
-# hat sits lower than you'd expect (its volume is already the minimum, 1) and
-# the snare is at full volume to cut through.
+# (waveform, trim) for each melodic PICO-8 channel
+VOICES = {0: (3, 0.8), 1: (5, 1.0), 2: (1, 1.2)}
+PAD_VOICE = (0, 1.0)
+# drum hit -> (pitch, waveform, trim, effect); effects: 3 drop, 5 fade out.
+# Hat and snare are both noise, and higher pitch sounds brighter and louder,
+# so the hat is pitched low and trimmed hard.
 DRUMS = {
-    "kick": (18, 0, 7, 3),
-    "snare": (36, 6, 7, 5),
-    "hat": (46, 6, 1, 5),
+    "kick": (18, 0, 1.2, 3),
+    "snare": (36, 6, 1.2, 5),
+    "hat": (46, 6, 0.5, 5),
 }
 DRUM_CH = {3: "kick", 4: "snare", 5: "hat"}
 DRUM_PRIORITY = {"snare": 3, "kick": 2, "hat": 1}
 EMPTY = (0, 0, 0, 0)
+
+
+def level(tl, trim):
+    """PICO-8 volume (1-7) for an OPL2 carrier total level."""
+    amp = 10 ** (-0.75 * (tl - 6) / 20)
+    return max(1, min(7, round(MUSIC_GAIN * trim * amp)))
 
 
 def row_length(events):
@@ -58,7 +70,7 @@ def row_length(events):
 
 
 def melodic_rows(events, ch, row, nrows):
-    """Per-row (pitch, volume 0..1, is_attack) or None for one OPL channel."""
+    """Per-row (pitch, total level, is_attack) or None for one OPL channel."""
     out = [None] * nrows
     start = None
     for t, kind, c, val in events + [(nrows * row, "off", ch, None)]:
@@ -76,15 +88,15 @@ def melodic_rows(events, ch, row, nrows):
 
 
 def to_pico_notes(rows, voice):
-    wave, vmax = voice
+    wave, trim = voice
     notes = []
     for i, cell in enumerate(rows):
         if cell is None:
             notes.append(EMPTY)
             continue
-        midi, vol, _ = cell
+        midi, tl, _ = cell
         pitch = max(0, min(63, midi - 36))
-        v = max(1, round(vol * vmax))
+        v = level(tl, trim)
         # PICO-8 glides into a repeated identical note without re-attacking,
         # so fade the row before a same-pitch attack to separate them.
         nxt = rows[i + 1] if i + 1 < len(rows) else None
@@ -95,15 +107,22 @@ def to_pico_notes(rows, voice):
 
 def drum_notes(events, row, nrows):
     hits = [None] * nrows
-    for t, kind, ch, _ in events:
+    for t, kind, ch, val in events:
         if kind != "on" or ch not in DRUM_CH:
             continue
         r = round(t / row)
         if r < nrows:
             name = DRUM_CH[ch]
-            if hits[r] is None or DRUM_PRIORITY[name] > DRUM_PRIORITY[hits[r]]:
-                hits[r] = name
-    return [DRUMS[h] if h else EMPTY for h in hits]
+            if hits[r] is None or DRUM_PRIORITY[name] > DRUM_PRIORITY[hits[r][0]]:
+                hits[r] = (name, val[1])
+    out = []
+    for h in hits:
+        if h:
+            pitch, wave, trim, fx = DRUMS[h[0]]
+            out.append((pitch, wave, level(h[1], trim), fx))
+        else:
+            out.append(EMPTY)
+    return out
 
 
 def convert(path, pad=False):

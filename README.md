@@ -59,7 +59,11 @@ its own cart in `music/`. `music_play("level_01")` copies that cart's sfx
 0–51 and patterns into memory with `reload()` and starts it. Sfx 52–63 are
 kept for sound effects.
 
-Waveforms, volumes and drum sounds are set at the top of `tools/vgm2p8.py`.
+Volumes follow the OPL2 mix: each note's carrier total level (0.75 dB per
+step) becomes a PICO-8 volume, with the loudest notes at `MUSIC_GAIN` (5), so
+the sound effects (6–7) sit on top. Each voice has a trim for how loud its
+PICO-8 waveform sounds. `MUSIC_GAIN`, the trims, waveforms and drum sounds
+are at the top of `tools/vgm2p8.py`.
 Re-run `python3 tools/vgm2p8.py all` after changing them.
 
 Sound effects live in sfx 52–62 of the main cart. They all play on channel 3,
