@@ -31,8 +31,8 @@ function score_hit()
  mult,streak=1,0
 end
 
-function score_str()
- return sub("00000"..tostr(score,2),-6)
+function score_str(v)
+ return sub("00000"..tostr(v or score,2),-6)
 end
 
 -- hud strip above the playfield

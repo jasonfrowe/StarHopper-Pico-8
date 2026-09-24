@@ -32,6 +32,7 @@ PICO8 = [
 # Explicit overrides for source colours where the nearest match looks wrong.
 # Key: (r, g, b) of the source pixel, value: PICO-8 colour index.
 OVERRIDES = {
+    (0x00, 0x00, 0xAA): 1,   # logo fill (drawn as the brighter secret colour 140 on the title)
     (0x55, 0x55, 0xFF): 12,  # CGA blue (player hull, S pickup)
     (0xFF, 0x55, 0x55): 8,   # CGA light red (player engine)
     (0xFF, 0x1D, 0x1D): 8,   # red (explosion ring)
@@ -130,6 +131,42 @@ def nearest(rgb):
                + (PICO8[i][1] - g) ** 2 * 4 + (PICO8[i][2] - b) ** 2 * 2)
 
 
+def logo(src):
+    """The STAR HOPPER logo: rendered from the HUD tile map (tile rows 4-16,
+    columns 8-32), cropped, and halved like the sprites."""
+    tiles = Image.open(os.path.join(src, "Sprites/StarFields_tiles.png"))
+    hud = open(os.path.join(src, "images/StarFields_HUD_map.bin"), "rb").read()
+    im = Image.new("RGBA", (200, 104))
+    for ty in range(4, 17):
+        for tx in range(8, 33):
+            idx = tiles.crop((hud[ty * 40 + tx] * 8, 0, hud[ty * 40 + tx] * 8 + 8, 8))
+            t = idx.convert("RGBA")
+            # palette index 0 is transparent
+            t.putalpha(Image.frombytes("L", idx.size, bytes(0 if v == 0 else 255 for v in idx.getdata())))
+            im.paste(t, ((tx - 8) * 8, (ty - 4) * 8))
+    x0, y0, x1, y1 = im.getbbox()
+    return im.crop((x0, y0, x0 + (x1 - x0 + 1) // 2 * 2, y0 + (y1 - y0 + 1) // 2 * 2))
+
+
+LOGO_ROWS = 40  # the logo is stored at map memory 0x2000 with a 64-byte row stride
+
+
+def write_logo(text, px):
+    """Store logo pixels in the (unused) upper map, in sprite-sheet layout, so
+    one memcpy(0x1000,0x2000,..) drops it onto sheet rows 64+ for sspr()."""
+    if len(px) > LOGO_ROWS or len(px[0]) > 128:
+        sys.exit("logo too big")
+    data = bytearray(4096)
+    for y, row in enumerate(px):
+        for x, c in enumerate(row):
+            data[y * 64 + x // 2] |= (c or 0) << (4 * (x % 2))
+    body = "".join(data[i:i + 128].hex() + "\n" for i in range(0, 4096, 128))
+    m = re.search(r"^__map__\n(?:(?!__\w+__\n).*\n)*", text, re.M)
+    if m:
+        return text[:m.start()] + "__map__\n" + body + text[m.end():]
+    return text.rstrip("\n") + "\n__map__\n" + body
+
+
 def read_gfx(lines):
     start = lines.index("__gfx__\n") + 1
     end = start
@@ -165,11 +202,18 @@ def main():
                 sheet[oy + y][ox + x] = "0" if ch == "." else ch
 
     lines[start:end] = ["".join(r) + "\n" for r in sheet]
+    lg = reduce(logo(args.src), 2)
+    text = write_logo("".join(lines), lg)  # build everything before touching the cart
     with open(CART, "w") as f:
-        f.writelines(lines)
-    print(f"updated __gfx__ in {os.path.normpath(CART)}")
+        f.write(text)
+    print(f"updated __gfx__ and the {len(lg[0])}x{len(lg)} logo in __map__ of {os.path.normpath(CART)}")
 
     if args.preview:
+        lp = Image.new("RGB", (len(lg[0]), len(lg)))
+        for y, row in enumerate(lg):
+            for x, c in enumerate(row):
+                lp.putpixel((x, y), PICO8[c or 0])
+        lp.resize((lp.width * 6, lp.height * 6), Image.NEAREST).save(args.preview.replace(".png", "_logo.png"))
         out = Image.new("RGB", (128, 128))
         for y in range(128):
             for x in range(128):

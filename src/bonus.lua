@@ -71,7 +71,7 @@ function bonus_update()
  end
  if bph==5 and fresh then
   if lvl>=7 then
-   state="win"
+   win_start()
   else
    start_level(lvl+1)
    pgx,pgy=60,pstart

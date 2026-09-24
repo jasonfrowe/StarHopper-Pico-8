@@ -3,6 +3,7 @@
 --   python3 tools/snap.py --frames 6000 --each "bl=3
 --   $(cat tools/bosstest.lua)"
 if i==1 then
+ new_game()
  start_level(bl or 1)
  lvl_done=true
  can_hurt=function() return false end

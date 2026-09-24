@@ -1,6 +1,7 @@
 -- autopilot for tools/snap.py: python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua
 -- invincible ship that holds fire and tracks the lowest enemy; logs each sub-wave
 if i==1 then
+ new_game()
  can_hurt=function() return false end
  btn=function(b)
   if (b>3) return true
@@ -13,7 +14,7 @@ if i==1 then
  end
  lastl,lasts=0,-1
 end
-if lvl!=lastl or sub_wave!=lasts then
- printh(i.." lvl "..lvl.." wave "..sub_wave.." enemies "..#enemies.." objs "..#objs.." score "..score_str().." x"..mult.." lives "..lives)
- lastl,lasts=lvl,sub_wave
+if lvl!=lastl or sub_wave!=lasts or state!=lastst then
+ printh(i.." "..state.." lvl "..lvl.." wave "..sub_wave.." enemies "..#enemies.." objs "..#objs.." score "..score_str().." x"..mult.." lives "..lives)
+ lastl,lasts,lastst=lvl,sub_wave,state
 end

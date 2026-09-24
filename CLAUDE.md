@@ -12,3 +12,6 @@
 - Hand-drawn replacements for imported cells go in `HAND` in `tools/import_gfx.py`.
 - Music: one cart per tune in `music/`, loaded with `music_play(name)` (`src/music.lua`). Sfx 0-51 belong to music, 52-63 to game sound effects.
 - Boss weak spots are colour 15 in the sheet; `_draw` maps 15->5 (grey) and `boss_draw` recolours it yellow/red. Bosses test headless via `tools/bosstest.lua`.
+- The title logo is stored in the upper map (0x2000, 64-byte rows) by `import_gfx.py`; `title_start` memcpys it over sheet rows 64+ and `new_game` reloads them. Don't use the map for anything else.
+- High score: `cartdata("jasonrowe_starhopper")`, slot 0, stored >>16 like the score.
+- Game flow states live in `main.lua` (title, play, clear, bonus, failed, over, win).

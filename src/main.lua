@@ -1,15 +1,18 @@
 -- main: pico-8 entry points and game flow
--- state: "play", "clear" (ship glides off after the boss), "bonus",
+-- state: "title", "play", "clear" (ship glides off after the boss), "bonus",
 -- "failed" (boss timed out: retry), "over", "win"
 
 ht=8 -- playfield top; the hud sits above it
 
 function _init()
+ cartdata("jasonrowe_starhopper")
+ hiscore=dget(0)
  stars_init()
- new_game()
+ title_start()
 end
 
 function new_game()
+ reload(0x1000,0x1000,0x1000) -- boss sprites, after the title's logo
  pgx=nil
  score_init()
  player_new_run()
@@ -39,8 +42,10 @@ function _update60()
   if (bt>60) bonus_start()
  elseif state=="bonus" then
   bonus_update()
- elseif fresh then
-  if (state=="failed") start_level(lvl) else new_game()
+ elseif state=="failed" then
+  if (fresh) start_level(lvl)
+ else
+  screens_update()
  end
 end
 
@@ -63,8 +68,7 @@ function play_update()
   if lives>0 then
    player_respawn()
   else
-   state="over"
-   music_play("gameover")
+   gameover_start()
   end
  end
 
@@ -78,17 +82,17 @@ end
 function _draw()
  cls()
  pal(15,5) -- weak spot colour: grey unless a boss recolours it
+ pal(1,state=="title" and 140 or 1,1) -- brighter blue for the logo
  stars_draw()
  boss_draw()
  enemies_draw()
  objs_draw()
  shots_draw()
  player_draw()
- hud_draw()
- if (banner) cprint("level "..lvl,60,7)
+ if (state!="title") hud_draw()
+ screens_draw()
+ if (banner and state=="play") cprint("level "..lvl,60,7)
  if (state=="bonus") bonus_draw()
  if (state=="clear") cprint("level complete",60,7)
  if (state=="failed") cprint("level failed",60,8)
- if (state=="win") cprint("you win",60,10)
- if (state=="over") cprint("game over",60,8)
 end
