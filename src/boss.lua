@@ -5,7 +5,7 @@
 
 -- the tour between waves: 16 pivots sweeping the width and dipping to y=40
 -- (the original's 8 stayed above y=21). each boss starts at a different
--- pivot and later bosses tour faster.
+-- pivot and bosses 2-3 tour faster (4+ keep boss 3's speed).
 bpx=split"52,101,77,52,28,3,28,52,77,101,101,52,3,3,28,52"
 bpy=split"8,8,22,36,22,8,30,14,30,8,24,40,24,8,16,8"
 
@@ -16,8 +16,8 @@ end
 function boss_start()
  bv=min(lvl,7)
  bx,by,bhp,bmode=52,-16,48,"enter"
- bp0,bspd,bdir,bdodge=bv*5%16+1,1+bv*.08,1,0
- btime,bwt,bwc,bcyc,bfire,bvol,bflash,bset,banim,b6=0,180,0,0,0,0,0,0,0,0
+ bp0,bspd,bdir,bdodge=bv*5%16+1,1+min(bv,3)*.08,1,0
+ btime,bwt,bwc,bcyc,bly,bvol,bflash,bset,banim,b6=0,180,0,0,0,0,0,0,0,0
  bwave,bfail=false,false
  -- level 2's boss has a wider weak spot
  bwx,bww=bv==2 and 5 or 10,bv==2 and 14 or 5
@@ -123,16 +123,19 @@ function boss_update()
  -- attacks only while touring: 3-volley bursts from the twin guns,
  -- started when the player is lined up (every 100 frames, the original
  -- waited 180), plus an aimed shot every 90-bv*6 frames. boss 6 bursts
- -- faster and adds a centre gun.
+ -- more often and adds a centre gun. volleys are spaced by distance, not
+ -- time (bly tracks the last one), so a boss moving down can't stack
+ -- them: there's always a 10px gap to fly through, and 14px between
+ -- the two guns' bullets (the original's 10 was too tight for the ship).
  if bmode=="pivot" then
-  local cyc,iv=100,8
+  local cyc=100
   bshot=(bshot or 0)+1
   if bshot>=90-bv*6 then
    fire_aimed({x=bx+8,y=by+12},em)
    bshot=0
   end
   if bv==6 then
-   cyc,iv=70,3
+   cyc=70
    b6-=1
    if b6<=0 then
     ebullet(bx+8,by+16,0,1.67)
@@ -141,22 +144,21 @@ function boss_update()
   end
   bcyc=(bcyc+1)%cyc
   if (bcyc==0) bvol=0
+  bly+=1.67
   if bcyc<54 then
    bset=2
-   bfire-=1
-   if bvol<3 and bfire<=0 and (bvol>0 or abs(px-bx-8)<=12) then
-    ebullet(bx+2,by+16,0,1.67,9)
-    ebullet(bx+14,by+16,0,1.67,10)
+   if bvol<3 and (bvol>0 and bly>=by+30 or bvol==0 and abs(px-bx-8)<=12) then
+    ebullet(bx,by+16,0,1.67,9)
+    ebullet(bx+16,by+16,0,1.67,10)
     bvol+=1
-    bfire=iv
+    bly=by+16
    end
   else
-   bfire=0
    banim+=1
    if (banim%24==0) bset=bset==0 and 1 or 0
   end
  else
-  bcyc,bfire,b6,bset=0,0,0,0
+  bcyc,b6,bset=0,0,0
  end
 
  -- weak spot: boss 4 is only vulnerable while its minions are alive.
@@ -171,7 +173,7 @@ function boss_update()
   snd(s_bhit)
  end
  -- ramming the boss costs a quarter of the ship's health
- if can_hurt() and overlap(bx+bwx,by,bww,16,px+1,py+1,6,6) then
+ if can_hurt() and overlap(bx+bwx,by,bww,16,px+2,py+1,4,6) then
   player_hurt(12)
  end
 
@@ -216,6 +218,7 @@ function boss_draw()
  spr(96+n\5*32+n%5*3,bx+split"-1,1,0,0,0"[s+1],by+split"0,0,-1,1,0"[s+1],3,2)
  pal()
  pal(15,5)
- -- boss health: 1px per hp
+ -- boss health: 1px per hp over a grey empty bar
+ rectfill(40,ht+1,87,ht+2,5)
  if (bhp>0) rectfill(40,ht+1,39+bhp,ht+2,8)
 end

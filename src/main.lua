@@ -56,11 +56,11 @@ function play_update()
  enemies_update()
  if (#enemies>0) banner=false
 
- -- player hitbox is 6x6 inside the 8x8 sprite
+ -- player hitbox is 4x6 inside the 8x8 sprite
  if not pdead then
-  local x,y=px+1,py+1
-  if (objs_touch(x,y,6,6)) player_hurt(4)
-  if (can_hurt() and enemy_touch(x,y,6,6)) player_hurt(4)
+  local x,y=px+2,py+1
+  if (objs_touch(x,y,4,6)) player_hurt(4)
+  if (can_hurt() and enemy_touch(x,y,4,6)) player_hurt(4)
   if (boss) boss_update()
  end
 

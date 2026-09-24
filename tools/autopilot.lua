@@ -1,4 +1,4 @@
--- autopilot for tools/snap.py: python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua
+-- autopilot for tools/snap.py: .venv/bin/python tools/snap.py --frames 20000 --each @tools/autopilot.lua
 -- invincible ship that holds fire and tracks the lowest enemy; logs each sub-wave
 if i==1 then
  new_game()

@@ -1,7 +1,7 @@
 # Star Hopper (PICO-8)
 
 A PICO-8 port of Star Hopper, originally written for the Picocomputer 6502
-(`/Users/rowe/Software/rp6502/RPDemo`).
+(`/Users/jasonrowe/Software/rp6502/RPDemo`).
 
 ## Layout
 
@@ -14,9 +14,34 @@ A PICO-8 port of Star Hopper, originally written for the Picocomputer 6502
 | `tools/vgm2p8.py` | Converts the RP6502 VGM tunes into `music/*.p8` |
 | `tools/make_sfx.py` | Writes the sound effects into sfx 52–63, re-creating the original's OPL2 sweeps and chimes |
 | `tools/snap.py` | Runs the cart headless for N frames, prints runtime errors and saves `snap.png` |
-| `tools/autopilot.lua` | Invincible auto-play for `snap.py`, logging each wave: `python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua` |
+| `tools/autopilot.lua` | Invincible auto-play for `snap.py`, logging each wave: `.venv/bin/python tools/snap.py --frames 20000 --each @tools/autopilot.lua` |
 | `tools/bosstest.lua` | Invincible boss-fight autopilot for `snap.py` (set `bl=<level>` first) |
 | `tools/tokens.py` | Approximate token count per source file |
+| `tools/export.py` | Web build in `build/starhopper_html/` with the music carts bundled; `--push user/game:html` uploads it with butler |
+| `tools/cover.py` | Composes the itch.io cover `itch/cover.png` (630×500) from the cart's art |
+| `itch/` | itch.io cover image and page description draft |
+| `tools/find_pico8.py` | Finds the PICO-8 binary for `snap.py` and `export.py` |
+
+## Python tools
+
+`snap.py` and `import_gfx.py` need Pillow; the others use only the standard library.
+Set up a local venv once:
+
+    python3 -m venv .venv
+    .venv/bin/pip install -r requirements.txt
+
+`snap.py` finds PICO-8 by checking `$PICO8`, then the usual install folders,
+then `pico8` on `$PATH`, then (on macOS) Spotlight. If it can't find it, point it
+at the binary: `export PICO8=/path/to/PICO-8.app/Contents/MacOS/pico8`.
+
+## Publishing to itch.io
+
+    .venv/bin/python tools/snap.py --frames 200 --each "hiscore=0" --label   # once, or to refresh the cover
+    python3 tools/export.py --push jfrowe/<game>:html
+
+Exports store bundled carts by file name only, so `export.py` builds from a staging
+copy with the music carts beside the cart and `mdir=""` in `src/music.lua`. butler is
+found via `$BUTLER`, `~/Software/Pico8/butler-darwin-arm64/butler` or `$PATH`.
 
 ## Workflow
 
@@ -100,7 +125,17 @@ music cut down to fit a single cart.
 - Bosses fire more: the twin-gun bursts come every 100 frames (was 180) and
   start when the player is within 12 px (was 7), plus an aimed shot every
   1.5 s (boss 1) down to 0.8 s (boss 7).
+- A boss's 3-volley bursts are spaced 14 px apart however the boss is
+  moving (the original fired every 8 frames, so a boss moving down stacked
+  them), leaving a gap the ship can fly through. Boss 6's bursts are no
+  longer packed tighter than the others.
+- The boss's twin guns fire 4 px further apart (a 14 px gap instead of
+  10), so the ship can fly between the two streams.
+- The ship's hitbox is 4×6 instead of 6×6 (1 px narrower on each side).
 - Type 4 enemies dive 1.5x faster.
+- Type 3 enemies rest for 1 s after every 10 shots from their attack post.
+- Bosses 4-7 tour at boss 3's speed instead of getting faster still.
+- Player and boss health bars show the empty part in grey.
 - Zig-zag (type 0) waves are centred on the player's position when they
   spawn, instead of a random column, and only dive from a third of the way
   down the screen.

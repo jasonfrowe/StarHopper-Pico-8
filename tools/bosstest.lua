@@ -1,6 +1,6 @@
 -- boss test for tools/snap.py: jump straight to level bl's boss (default 1) with an
 -- invincible autopilot that stays under the boss and fires; logs each boss mode change.
---   python3 tools/snap.py --frames 6000 --each "bl=3
+--   .venv/bin/python tools/snap.py --frames 6000 --each "bl=3
 --   $(cat tools/bosstest.lua)"
 if i==1 then
  new_game()

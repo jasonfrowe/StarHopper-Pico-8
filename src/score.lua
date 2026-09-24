@@ -43,8 +43,8 @@ function hud_draw()
  rectfill(0,0,127,ht-1,0)
  line(0,ht-1,127,ht-1,2)
  print(score_str(),1,1,10)
- -- health bar: 48hp in 24px, red when low
- rect(51,1,76,5,5)
+ -- health bar: 48hp in 24px over grey, red when low
+ rectfill(51,1,76,5,5)
  -- speed (blue) and power (red) pickups collected, 4 pips each
  for i=1,4 do
   if (i<=(pspd-pspd0)/.1125+.5) rectfill(25+i*3,1,26+i*3,2,12)

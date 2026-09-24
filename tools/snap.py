@@ -4,8 +4,9 @@
 Catches runtime errors without opening the PICO-8 window, and lets you (or
 Claude) see a frame. Optional Lua runs before each update to fake input.
 
-Usage:  python3 tools/snap.py [--frames 120] [--out snap.png] [--each "lua code" | --each @file.lua]
-        python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua
+Usage:  .venv/bin/python tools/snap.py [--frames 120] [--out snap.png] [--each "lua code" | --each @file.lua]
+        .venv/bin/python tools/snap.py --frames 20000 --each @tools/autopilot.lua
+        .venv/bin/python tools/snap.py --frames 200 --each "hiscore=0" --label   # cart label for export
 """
 import argparse
 import os
@@ -17,12 +18,12 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, ".."))
 CART = os.path.join(ROOT, "starhopper.p8")
-PICO8 = "/Users/rowe/Software/pico-8/PICO-8.app/Contents/MacOS/pico8"
 CARTS_DIR = os.path.expanduser("~/Library/Application Support/pico-8/carts")
 DUMP = "starhopper_snap.txt"
 
 sys.path.insert(0, HERE)
 from import_gfx import PICO8 as PALETTE  # noqa: E402
+from find_pico8 import find_pico8  # noqa: E402
 
 
 def main():
@@ -31,6 +32,7 @@ def main():
     ap.add_argument("--out", default=os.path.join(ROOT, "snap.png"))
     ap.add_argument("--each", default="", help="Lua run before each _update60 (i = frame number); @file reads it from a file")
     ap.add_argument("--scale", type=int, default=4)
+    ap.add_argument("--label", action="store_true", help="also save the frame as the cart's __label__ (needed to export)")
     args = ap.parse_args()
     if args.each.startswith("@"):
         with open(os.path.join(ROOT, args.each[1:])) as f:
@@ -65,7 +67,7 @@ _update60,_update,_draw=nil
     if os.path.exists(dump):
         os.remove(dump)
     try:
-        r = subprocess.run([PICO8, "-x", "snap_tmp.p8"], cwd=ROOT, capture_output=True, text=True, timeout=30)
+        r = subprocess.run([find_pico8(), "-x", "snap_tmp.p8"], cwd=ROOT, capture_output=True, text=True, timeout=30)
     finally:
         os.remove(tmp)
     out = (r.stdout + r.stderr).replace("RUNNING: snap_tmp.p8\n", "")
@@ -84,6 +86,27 @@ _update60,_update,_draw=nil
         im.putpixel((x + 1, y), PALETTE[v >> 4])
     im.resize((128 * args.scale, 128 * args.scale), Image.NEAREST).save(args.out)
     print(f"saved {args.out}")
+    if args.label:
+        save_label(b)
+
+
+def save_label(b):
+    """Write the screen (4-bit pixels, low nibble first) into starhopper.p8's __label__."""
+    hexs = "".join(f"{v & 15:x}{v >> 4:x}" for v in b)
+    label = "__label__\n" + "\n".join(hexs[i:i + 128] for i in range(0, len(hexs), 128)) + "\n\n"
+    with open(CART) as f:
+        text = f.read()
+    start = text.find("__label__\n")
+    if start >= 0:
+        end = text.find("\n__", start + 1) + 1
+        text = text[:start] + label + text[end:]
+    else:
+        # sections go __gfx__, __label__, __gff__, __map__, ...
+        start = min(i for i in (text.find("\n__" + s + "__\n") for s in ("gff", "map", "sfx", "music")) if i >= 0) + 1
+        text = text[:start] + label + text[start:]
+    with open(CART, "w") as f:
+        f.write(text)
+    print(f"saved label into {os.path.basename(CART)}")
 
 
 if __name__ == "__main__":

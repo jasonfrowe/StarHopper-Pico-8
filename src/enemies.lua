@@ -122,7 +122,7 @@ function spawn_enemy(t,k)
   local gr,i=count_type(3)\5,wvar*10+lane*2
   e.tx=t3p[i+1]+rank*3+(gr%2*4)*(wvar==0 and 1 or -1)
   e.ty=t3p[i+2]+rank*7+gr*10
-  e.tm,e.ft,e.sp=480,6+k*2,k*2
+  e.tm,e.ft,e.sp,e.nf=480,6+k*2,k*2,0
  elseif t==4 then
   e.tm=36+k*12
  elseif t==5 then
@@ -192,8 +192,13 @@ function enemy_move(e)
   if ph==0 then
    if (move_to(e,e.tx,e.ty,em)) e.ph,e.tm=1,480
   elseif ph==1 then
+   -- every 10th shot is followed by a 1s cool-down
    if e.ft<=0 then
-    e.ft=fire_aimed(e,es,(e.sp%7-3)*13) and 8 or 2
+    e.ft=2
+    if fire_aimed(e,es,(e.sp%7-3)*13) then
+     e.nf+=1
+     e.ft=e.nf%10==0 and 60 or 8
+    end
     e.sp+=1
    end
    if (e.tm<=0) e.ph=2

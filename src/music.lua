@@ -3,11 +3,13 @@
 -- sfx 52-63 are left alone for game sound effects.
 
 music_cur=nil
+-- tools/export.py sets this to "" (exports store bundled carts without folders)
+mdir="music/"
 
 function music_play(name)
  if (name==music_cur) return
  music(-1)
- reload(0x3100,0x3100,0x0ed0,"music/"..name..".p8")
+ reload(0x3100,0x3100,0x0ed0,mdir..name..".p8")
  music(0)
  music_cur=name
 end

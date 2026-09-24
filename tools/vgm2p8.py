@@ -30,7 +30,7 @@ ROOT = os.path.normpath(os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
 from vgm_opl import read_vgm  # noqa: E402
 
-SRC_DIR = "/Users/rowe/Software/rp6502/RPDemo/music"
+SRC_DIR = "/Users/jasonrowe/Software/rp6502/RPDemo/music"
 ROWS = 32
 SAMPLES_PER_TICK = 735  # 44100 / 60
 
@@ -43,7 +43,7 @@ MUSIC_GAIN = 5
 
 # PICO-8 waveforms: 0 tri, 1 tilted saw, 2 saw, 3 square, 4 pulse, 5 organ, 6 noise, 7 phaser
 # (waveform, trim) for each melodic PICO-8 channel
-VOICES = {0: (3, 0.8), 1: (5, 1.0), 2: (1, 1.2)}
+VOICES = {0: (3, 0.65), 1: (5, 1.2), 2: (1, 1.2)}
 PAD_VOICE = (0, 1.0)
 # drum hit -> (pitch, waveform, trim, effect); effects: 3 drop, 5 fade out.
 # Hat and snare are both noise, and higher pitch sounds brighter and louder,

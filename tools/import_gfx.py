@@ -7,7 +7,7 @@ layout(). Only those cells are touched, so sprites you draw in the PICO-8
 editor elsewhere on the sheet are kept -- but re-running the tool overwrites
 any hand touch-ups inside them.
 
-Usage:  python3 tools/import_gfx.py [--src /path/to/RPDemo] [--preview out.png]
+Usage:  .venv/bin/python tools/import_gfx.py [--src /path/to/RPDemo] [--preview out.png]
 """
 import argparse
 import os
@@ -19,7 +19,7 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CART = os.path.join(HERE, "..", "starhopper.p8")
-DEFAULT_SRC = "/Users/rowe/Software/rp6502/RPDemo"
+DEFAULT_SRC = "/Users/jasonrowe/Software/rp6502/RPDemo"
 
 # The 16 standard PICO-8 colours.
 PICO8 = [
