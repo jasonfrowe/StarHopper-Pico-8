@@ -16,8 +16,9 @@ function obj(k,x,y,vx,vy,f)
  end
 end
 
-function ebullet(x,y,vx,vy)
- return obj(1,x,y,vx,vy,2)
+function ebullet(x,y,vx,vy,f)
+ snd(s_efire)
+ return obj(1,x,y,vx,vy,f or 2)
 end
 
 function boom(o)

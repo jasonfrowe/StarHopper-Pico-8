@@ -108,7 +108,7 @@ function boss_update()
    cyc,iv=120,3
    b6-=1
    if b6<=0 then
-    obj(1,bx+8,by+16,0,1.67,2)
+    ebullet(bx+8,by+16,0,1.67)
     b6=12
    end
   end
@@ -118,8 +118,8 @@ function boss_update()
    bset=2
    bfire-=1
    if bvol<3 and bfire<=0 and (bvol>0 or abs(px-bx-8)<=7) then
-    obj(1,bx+2,by+16,0,1.67,9)
-    obj(1,bx+14,by+16,0,1.67,10)
+    ebullet(bx+2,by+16,0,1.67,9)
+    ebullet(bx+14,by+16,0,1.67,10)
     bvol+=1
     bfire=iv
    end
@@ -147,6 +147,7 @@ function boss_update()
  if bhp<=0 or btime>=14400 then
   -- beaten, or out of time (4 minutes) and the level is failed
   bfail=bhp>0
+  if (not bfail) snd(s_clear)
   bmode,btm,bset,enemies=bfail and "leave" or "dead",180,0,{}
   objs_init()
   return

@@ -12,6 +12,7 @@ A PICO-8 port of Star Hopper, originally written for the Picocomputer 6502
 | `music/*.p8` | One cart per tune, holding its sfx and music patterns. Run one in PICO-8 to hear it |
 | `tools/import_gfx.py` | Converts the RP6502 PNGs into the cart's `__gfx__`: matches colors to the PICO-8 palette and halves 16×16 art to 8×8 |
 | `tools/vgm2p8.py` | Converts the RP6502 VGM tunes into `music/*.p8` |
+| `tools/make_sfx.py` | Writes the 11 sound effects into sfx 52–62, re-creating the original's OPL2 sweeps and chimes |
 | `tools/snap.py` | Runs the cart headless for N frames, prints runtime errors and saves `snap.png` |
 | `tools/autopilot.lua` | Invincible auto-play for `snap.py`, logging each wave: `python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua` |
 | `tools/bosstest.lua` | Invincible boss-fight autopilot for `snap.py` (set `bl=<level>` first) |
@@ -61,6 +62,11 @@ kept for sound effects.
 Waveforms, volumes and drum sounds are set at the top of `tools/vgm2p8.py`.
 Re-run `python3 tools/vgm2p8.py all` after changing them.
 
+Sound effects live in sfx 52–62 of the main cart. They all play on channel 3,
+so they briefly replace the drums rather than the melody (the original had two
+extra channels just for effects). The original's priority tiers still apply:
+gunfire never cuts off an explosion or a fanfare.
+
 **Limitation:** PICO-8 only allows loading data from other carts (multi-cart)
 locally and in exported binaries or web builds (up to 16 carts). On the BBS
 and in Splore, a cart can't read other carts, so a BBS release would need the
@@ -74,4 +80,4 @@ music cut down to fit a single cart.
 | 9k lines of C | 8192-token limit | Hardware code (XRAM, OPL, VGM, gamepad mapper, tile planes) is dropped. Waves, bosses, bonus tally, title, game over and victory: done, ~5600 tokens |
 | 176 enemy frames of 16×16 | 256 sprites of 8×8 (no map) | Every frame halved: 195 sprites used |
 | BG/FG tile starfields | Procedural `line()` stars | Done |
-| 13 OPL2 VGM tracks, generated SFX | 64 sfx, 64 music patterns | Auto-converted, one cart per tune (see Music) |
+| 13 OPL2 VGM tracks, generated SFX | 64 sfx, 64 music patterns | Auto-converted, one cart per tune (see Music); SFX re-created in sfx 52–62 |

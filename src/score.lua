@@ -15,7 +15,10 @@ function score_add(p)
  score=min(score+(p>>16),0xf.423f) -- cap at 999999
  if score>=next_life then
   next_life+=0x1.86a0
-  if (lives<3) lives+=1
+  if lives<3 then
+   lives+=1
+   snd(s_xtra)
+  end
  end
 end
 

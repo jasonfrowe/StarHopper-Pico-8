@@ -26,7 +26,10 @@ function bonus_step()
   bic=min(bic+1.6,8)
   if (bic==8) bph,bt,bcnt=1,0,0
  elseif bph==1 then
-  if (bt%6==0 and bcnt<k) bcnt+=1
+  if bt%6==0 and bcnt<k then
+   bcnt+=1
+   snd(s_tally)
+  end
   if bcnt>=k then
    btot+=(k>>16)*row_pts(brow)
    bph,bt=2,0
@@ -54,6 +57,7 @@ function bonus_step()
    end
    score_add(p)
    btot-=p>>16
+   snd(s_tally)
   end
  elseif bph==4 then
   if bheal<=0 or php>=48 then
@@ -61,6 +65,7 @@ function bonus_step()
   elseif bt%6==0 then
    php+=1
    bheal-=1
+   snd(s_tally)
   end
  end
 end

@@ -5,7 +5,10 @@ function shots_init()
 end
 
 function shot_fire(x,y)
- if (#shots<8) add(shots,{x=x,y=y})
+ if #shots<8 then
+  add(shots,{x=x,y=y})
+  snd(s_pfire)
+ end
 end
 
 -- consume the first shot touching the box; true on a hit

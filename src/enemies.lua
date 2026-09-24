@@ -227,6 +227,7 @@ end
 
 function enemy_die(e)
  e.dying,e.f,e.dt=true,3,0
+ snd(s_edie)
 end
 
 function groups_update()

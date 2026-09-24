@@ -40,6 +40,7 @@ end
 
 function win_start()
  state,tt,wr,wy,wph="win",0,0,-16,0
+ snd(s_win)
  save_hiscore()
  music_play("victory")
 end

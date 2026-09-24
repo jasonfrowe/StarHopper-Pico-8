@@ -26,10 +26,14 @@ function player_hurt(n)
   pdead,pdt=true,0
   pspd=max(pspd0,pspd-.225)
   prate=min(20,prate+2)
+  snd(s_pdie)
+ else
+  snd(s_phit)
  end
 end
 
 function player_pickup(f)
+ snd(s_pick)
  if f==3 then php=min(48,php+8)
  elseif f==4 then pspd=min(pspd0+.45,pspd+.1125)
  else prate=max(16,prate-1) end
@@ -50,6 +54,8 @@ function player_update()
   return
  end
  if (pinv>0) pinv-=1
+ -- low energy warning beep
+ if (php<=12 and state=="play" and time()*60%40<1) snd(s_low)
  if prise then
   py-=1
   if (py<=pstart) py,prise=pstart,false
