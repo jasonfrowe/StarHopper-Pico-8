@@ -55,6 +55,12 @@ function player_update()
   if (py<=pstart) py,prise=pstart,false
   return
  end
+ -- scripted glide to (pgx,pgy) between levels; no control meanwhile
+ if pgx then
+  px,py,pspr=approach(px,pgx,.5),approach(py,pgy,.5),16
+  if (px==pgx and py==pgy) pgx=nil
+  return
+ end
 
  local dx,dy=0,0
  if (btn(0)) dx-=1

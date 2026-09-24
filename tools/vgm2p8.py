@@ -37,11 +37,14 @@ SAMPLES_PER_TICK = 735  # 44100 / 60
 # (waveform, max volume) for each melodic PICO-8 channel
 VOICES = {0: (3, 5), 1: (5, 4), 2: (1, 6)}
 PAD_VOICE = (0, 3)
-# drum hit -> (pitch, waveform, volume, effect); effects: 3 drop, 5 fade out
+# drum hit -> (pitch, waveform, volume, effect); effects: 3 drop, 5 fade out.
+# Hat and snare are both noise: higher pitch sounds brighter and louder, so the
+# hat sits lower than you'd expect (its volume is already the minimum, 1) and
+# the snare is at full volume to cut through.
 DRUMS = {
     "kick": (18, 0, 7, 3),
-    "snare": (30, 6, 5, 5),
-    "hat": (58, 6, 1, 5),
+    "snare": (36, 6, 7, 5),
+    "hat": (46, 6, 1, 5),
 }
 DRUM_CH = {3: "kick", 4: "snare", 5: "hat"}
 DRUM_PRIORITY = {"snare": 3, "kick": 2, "hat": 1}

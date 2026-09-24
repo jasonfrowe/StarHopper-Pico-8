@@ -50,7 +50,7 @@ function boss_update()
   by-=1.1
   if by<=-16 then
    boss=false
-   if (bfail) state="failed" else start_level(lvl+1)
+   if (bfail) state="failed" else state,bt,pgx,pgy="clear",0,60,106
   end
   return
  end

@@ -1,5 +1,6 @@
 -- main: pico-8 entry points and game flow
--- state: "play", "failed" (boss timed out: retry), "over"
+-- state: "play", "clear" (ship glides off after the boss), "bonus",
+-- "failed" (boss timed out: retry), "over", "win"
 
 ht=8 -- playfield top; the hud sits above it
 
@@ -9,6 +10,7 @@ function _init()
 end
 
 function new_game()
+ pgx=nil
  score_init()
  player_new_run()
  start_level(1)
@@ -25,10 +27,19 @@ function start_level(n)
 end
 
 function _update60()
+ -- fresh: fire pressed this frame (held from before doesn't count)
+ local b=btn(4) or btn(5)
+ fresh,held=b and not held,b
  stars_update()
  if state=="play" then
   play_update()
- elseif btnp(4) or btnp(5) then
+ elseif state=="clear" then
+  -- glide to the tally spot, hold a second, then tally
+  if pgx then player_update() else bt+=1 end
+  if (bt>60) bonus_start()
+ elseif state=="bonus" then
+  bonus_update()
+ elseif fresh then
   if (state=="failed") start_level(lvl) else new_game()
  end
 end
@@ -75,6 +86,9 @@ function _draw()
  player_draw()
  hud_draw()
  if (banner) cprint("level "..lvl,60,7)
+ if (state=="bonus") bonus_draw()
+ if (state=="clear") cprint("level complete",60,7)
  if (state=="failed") cprint("level failed",60,8)
+ if (state=="win") cprint("you win",60,10)
  if (state=="over") cprint("game over",60,8)
 end

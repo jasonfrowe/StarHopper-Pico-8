@@ -10,6 +10,7 @@ __lua__
 #include src/objs.lua
 #include src/enemies.lua
 #include src/boss.lua
+#include src/bonus.lua
 #include src/score.lua
 #include src/music.lua
 __gfx__
