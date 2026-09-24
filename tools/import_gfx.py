@@ -45,7 +45,9 @@ OVERRIDES = {
     (0x96, 0xA6, 0xA9): 6,   # enemy light grey
     (0xA1, 0x2B, 0x2E): 2,   # enemy dark red
     (0xE8, 0x46, 0x22): 8,   # enemy red/orange cores
-    (0xD5, 0xAD, 0x09): 10,  # gold (weak spots, GAME OVER letters)
+    (0xD5, 0xAD, 0x09): 10,  # gold (GAME OVER letters)
+    (0x6B, 0x70, 0x6C): 15,  # boss weak spot grey: its own colour so the game can recolour it
+                             # with pal(15,..); drawn grey (5) by default
 }
 
 # Sprite sheet map (sprite n = column n%16, row n//16). The starfield is drawn

@@ -59,8 +59,7 @@ end
 
 function wave_prepare()
  local s=sub_wave
- wlist,wspawned,wvar={},0,flr(rnd(2))
- wid+=1
+ wlist={}
  local function q(t,n)
   for i=1,n do add(wlist,t) end
  end
@@ -71,7 +70,13 @@ function wave_prepare()
   if s==5 then q(6,2) q(5,1) else q(a,3) end
  elseif lvl==4 then q(a,5)
  elseif lvl>4 then q(a,5) q(ext_b[s+1],5) end
+ new_wave()
+end
 
+-- start a wave from wlist (also used for boss minion waves)
+function new_wave()
+ wspawned,wvar=0,flr(rnd(2))
+ wid+=1
  local n5=count(wlist,5)
  if n5>0 then
   local cols=min(n5,5)

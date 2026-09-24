@@ -11,3 +11,4 @@
 - Budget: `python3 tools/tokens.py` (approximate; errs high). Headless play-through: `python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua` (max 32767 frames; add `start_level(n)` to begin later).
 - Hand-drawn replacements for imported cells go in `HAND` in `tools/import_gfx.py`.
 - Music: one cart per tune in `music/`, loaded with `music_play(name)` (`src/music.lua`). Sfx 0-51 belong to music, 52-63 to game sound effects.
+- Boss weak spots are colour 15 in the sheet; `_draw` maps 15->5 (grey) and `boss_draw` recolours it yellow/red. Bosses test headless via `tools/bosstest.lua`.

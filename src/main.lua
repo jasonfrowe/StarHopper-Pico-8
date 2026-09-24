@@ -1,4 +1,5 @@
 -- main: pico-8 entry points and game flow
+-- state: "play", "failed" (boss timed out: retry), "over"
 
 ht=8 -- playfield top; the hud sits above it
 
@@ -17,6 +18,7 @@ function start_level(n)
  shots_init()
  objs_init()
  level_start(n)
+ kills,boss={},false
  music_play("level_0"..min(n,7))
  banner=true
  state="play"
@@ -27,7 +29,7 @@ function _update60()
  if state=="play" then
   play_update()
  elseif btnp(4) or btnp(5) then
-  new_game()
+  if (state=="failed") start_level(lvl) else new_game()
  end
 end
 
@@ -43,6 +45,7 @@ function play_update()
   local x,y=px+1,py+1
   if (objs_touch(x,y,6,6)) player_hurt(4)
   if (can_hurt() and enemy_touch(x,y,6,6)) player_hurt(4)
+  if (boss) boss_update()
  end
 
  if pdead and pdt>=42 then
@@ -54,18 +57,24 @@ function play_update()
   end
  end
 
- -- todo: boss fight and bonus screen come between levels
- if (lvl_done and not pdead and not prise) start_level(lvl+1)
+ if (lvl_done and not boss and state=="play" and not pdead) boss_start()
+end
+
+function cprint(s,y,c)
+ print(s,64-#s*2,y,c)
 end
 
 function _draw()
  cls()
+ pal(15,5) -- weak spot colour: grey unless a boss recolours it
  stars_draw()
+ boss_draw()
  enemies_draw()
  objs_draw()
  shots_draw()
  player_draw()
  hud_draw()
- if (banner) print("level "..lvl,46,60,7)
- if (state=="over") print("game over",46,60,8)
+ if (banner) cprint("level "..lvl,60,7)
+ if (state=="failed") cprint("level failed",60,8)
+ if (state=="over") cprint("game over",60,8)
 end
