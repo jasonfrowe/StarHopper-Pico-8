@@ -64,6 +64,22 @@ def boss_slot(level, frame_set):
     return 96 + (n // 5) * 32 + (n % 5) * 3
 
 
+# Cells redrawn by hand for the smaller screen, written after the imported
+# art ('.' = transparent, hex digits = PICO-8 colours).
+HAND = {
+    2: [  # enemy bullet: the original 5x5 cross is too big at 128px
+        "........",
+        "........",
+        "........",
+        "...8....",
+        "..8e8...",
+        "...8....",
+        "........",
+        "........",
+    ],
+}
+
+
 def layout(src):
     """Yield (first sprite, PIL image at source resolution, downscale factor)."""
     proj = Image.open(os.path.join(src, "Sprites/Projectiles.png")).convert("RGBA")
@@ -140,6 +156,11 @@ def main():
         for y, row in enumerate(px):
             for x, c in enumerate(row):
                 sheet[oy + y][ox + x] = "%x" % (c or 0)
+    for spr, rows in HAND.items():
+        ox, oy = (spr % 16) * 8, (spr // 16) * 8
+        for y, row in enumerate(rows):
+            for x, ch in enumerate(row):
+                sheet[oy + y][ox + x] = "0" if ch == "." else ch
 
     lines[start:end] = ["".join(r) + "\n" for r in sheet]
     with open(CART, "w") as f:

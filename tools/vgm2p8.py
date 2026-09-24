@@ -41,7 +41,7 @@ PAD_VOICE = (0, 3)
 DRUMS = {
     "kick": (18, 0, 7, 3),
     "snare": (30, 6, 5, 5),
-    "hat": (58, 6, 2, 5),
+    "hat": (58, 6, 1, 5),
 }
 DRUM_CH = {3: "kick", 4: "snare", 5: "hat"}
 DRUM_PRIORITY = {"snare": 3, "kick": 2, "hat": 1}

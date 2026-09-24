@@ -13,6 +13,8 @@ A PICO-8 port of Star Hopper, originally written for the Picocomputer 6502
 | `tools/import_gfx.py` | Converts the RP6502 PNGs into the cart's `__gfx__`: matches colors to the PICO-8 palette and halves 16×16 art to 8×8 |
 | `tools/vgm2p8.py` | Converts the RP6502 VGM tunes into `music/*.p8` |
 | `tools/snap.py` | Runs the cart headless for N frames, prints runtime errors and saves `snap.png` |
+| `tools/autopilot.lua` | Invincible auto-play for `snap.py`, logging each wave: `python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua` |
+| `tools/tokens.py` | Approximate token count per source file |
 
 ## Workflow
 
@@ -68,7 +70,7 @@ music cut down to fit a single cart.
 | RP6502 | PICO-8 | Plan |
 |---|---|---|
 | 320×240, 60 fps | 128×128, `_update60` | Positions and speeds scaled by 0.4. All sprites 8×8 |
-| 9k lines of C | 8192-token limit | Hardware code (XRAM, OPL, VGM, gamepad mapper, tile planes) is dropped. Enemy and boss logic becomes table-driven |
+| 9k lines of C | 8192-token limit | Hardware code (XRAM, OPL, VGM, gamepad mapper, tile planes) is dropped. Enemies, waves, projectiles, pickups and scoring: done, ~3500 tokens |
 | 176 enemy frames of 16×16 | 256 sprites of 8×8 (no map) | Every frame halved: 195 sprites used |
 | BG/FG tile starfields | Procedural `line()` stars | Done |
 | 13 OPL2 VGM tracks, generated SFX | 64 sfx, 64 music patterns | Auto-converted, one cart per tune (see Music) |

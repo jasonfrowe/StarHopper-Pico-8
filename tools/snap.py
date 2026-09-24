@@ -4,7 +4,8 @@
 Catches runtime errors without opening the PICO-8 window, and lets you (or
 Claude) see a frame. Optional Lua runs before each update to fake input.
 
-Usage:  python3 tools/snap.py [--frames 120] [--out snap.png] [--each "lua code"]
+Usage:  python3 tools/snap.py [--frames 120] [--out snap.png] [--each "lua code" | --each @file.lua]
+        python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua
 """
 import argparse
 import os
@@ -28,9 +29,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--frames", type=int, default=120)
     ap.add_argument("--out", default=os.path.join(ROOT, "snap.png"))
-    ap.add_argument("--each", default="", help="Lua run before each _update60 (i = frame number)")
+    ap.add_argument("--each", default="", help="Lua run before each _update60 (i = frame number); @file reads it from a file")
     ap.add_argument("--scale", type=int, default=4)
     args = ap.parse_args()
+    if args.each.startswith("@"):
+        with open(os.path.join(ROOT, args.each[1:])) as f:
+            args.each = f.read()
+    if not 0 < args.frames <= 32767:
+        sys.exit("--frames must be 1..32767 (PICO-8 numbers are 16-bit)")
 
     with open(CART) as f:
         text = f.read()

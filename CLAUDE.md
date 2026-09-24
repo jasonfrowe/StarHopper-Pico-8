@@ -6,5 +6,8 @@
 - Verify changes with `python3 tools/snap.py --frames N [--each "lua"]` and view the PNG it saves; `--each` can fake input or state.
 - `tools/import_gfx.py` owns only the sprite cells its `layout()` writes; other cells may be hand-drawn in PICO-8, so don't blank the sheet.
 - All sprites are 8x8 (bosses are 3x2 blocks). The sheet map is at the top of `tools/import_gfx.py`; sprites 128-255 are used, so never use the map.
-- Speeds and positions: the rp6502 value x 0.4.
+- Coordinates: x = rp6502 x * 0.4; y = 8 + (rp6502 y - 24) * 5/9 (8px hud strip, then the 216px playfield in 120px). Speeds = rp6502 px/frame * 0.45.
+- Score is a 32-bit integer stored >>16 (`score_add`, `tostr(score,2)`); PICO-8 numbers overflow past 32767, including loop counters.
+- Budget: `python3 tools/tokens.py` (approximate; errs high). Headless play-through: `python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua` (max 32767 frames; add `start_level(n)` to begin later).
+- Hand-drawn replacements for imported cells go in `HAND` in `tools/import_gfx.py`.
 - Music: one cart per tune in `music/`, loaded with `music_play(name)` (`src/music.lua`). Sfx 0-51 belong to music, 52-63 to game sound effects.
