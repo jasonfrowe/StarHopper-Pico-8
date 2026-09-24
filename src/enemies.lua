@@ -60,7 +60,13 @@ end
 function wave_prepare()
  local s=sub_wave
  wlist={}
+ -- zig-zag (type 0) ships always come as one chain of 5+2*(level-1),
+ -- however many the level's tables ask for (a change from the original)
  local function q(t,n)
+  if t==0 then
+   if (count(wlist,0)>0) return
+   n=3+lvl*2
+  end
   for i=1,n do add(wlist,t) end
  end
  q(s<=6 and s or 12-s,5)

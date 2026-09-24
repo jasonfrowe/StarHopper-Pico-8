@@ -104,6 +104,9 @@ music cut down to fit a single cart.
 - Zig-zag (type 0) waves are centred on the player's position when they
   spawn, instead of a random column, and only dive from a third of the way
   down the screen.
+- Zig-zag ships always come as one chain of 5 + 2×(level − 1) (5 in level
+  1, 17 in level 7), including the extras in sub-waves 7–12, which were
+  single ships in the original.
 - 64 slots for enemy bullets, asteroids, pickups and explosions (the
   original had 32), so full bullet rings come out.
 - Level and boss music have no drums; channel 3 is kept for sound effects.
