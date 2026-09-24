@@ -10,13 +10,13 @@ end
 
 function shots_update()
  for s in all(shots) do
-  s.y-=4
+  s.y-=1.6 -- 4px/frame originally
   if (s.y<-8) del(shots,s)
  end
 end
 
 function shots_draw()
  for s in all(shots) do
-  spr(1,s.x-4,s.y)
+  spr(1,s.x,s.y)
  end
 end

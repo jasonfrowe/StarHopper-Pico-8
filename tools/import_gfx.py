@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Import Star Hopper PNG art from the RP6502 project into starhopper.p8's __gfx__.
 
-Each source frame is mapped to the nearest PICO-8 colour and pasted into the
-sprite sheet at the slot given in LAYOUT. Only the cells listed in LAYOUT are
-touched, so sprites you draw in the PICO-8 editor elsewhere on the sheet are
-kept. Re-running the tool overwrites the listed cells, though.
+Each source frame is mapped to the nearest PICO-8 colour, 16x16 art is halved
+to 8x8, and the result is pasted into the sprite sheet at the slot given by
+layout(). Only those cells are touched, so sprites you draw in the PICO-8
+editor elsewhere on the sheet are kept -- but re-running the tool overwrites
+any hand touch-ups inside them.
 
 Usage:  python3 tools/import_gfx.py [--src /path/to/RPDemo] [--preview out.png]
 """
@@ -12,6 +13,7 @@ import argparse
 import os
 import re
 import sys
+from collections import Counter
 
 from PIL import Image
 
@@ -46,13 +48,60 @@ OVERRIDES = {
     (0xD5, 0xAD, 0x09): 10,  # gold (weak spots, GAME OVER letters)
 }
 
-# (png relative to --src, frame width, frame height, source frame indices, first sprite number)
-# Frames are read left-to-right from a horizontal strip and written left-to-right
-# into the sheet starting at the given sprite number (sprite n = column n%16, row n//16).
-LAYOUT = [
-    ("Sprites/Projectiles.png", 8, 8, range(13), 1),       # sprites 1..13
-    ("Sprites/Player.png", 16, 16, range(6), 32),          # sprites 32,34,..,42 (2x2 each)
-]
+# Sprite sheet map (sprite n = column n%16, row n//16). The starfield is drawn
+# procedurally, so the map is unused and sprites 128-255 are free for art.
+#   1-13     projectiles, pickups (E S P), asteroids, explosion rings
+#   16-21    player: idle, right, left, explode x3
+#   22-63    enemies: 7 types x (3 flying + 3 dying) frames
+#   64-71    GAME OVER letters
+#   96-255   bosses: 7 levels x 3 frame sets (A, B, attack), each a 3x2 block
+PLAYER, ENEMY, LETTERS = 16, 22, 64
+
+
+def boss_slot(level, frame_set):
+    """First sprite of a boss frame: five 3x2 blocks per two sheet rows, from row 6."""
+    n = level * 3 + frame_set
+    return 96 + (n // 5) * 32 + (n % 5) * 3
+
+
+def layout(src):
+    """Yield (first sprite, PIL image at source resolution, downscale factor)."""
+    proj = Image.open(os.path.join(src, "Sprites/Projectiles.png")).convert("RGBA")
+    player = Image.open(os.path.join(src, "Sprites/Player.png")).convert("RGBA")
+    enemies = Image.open(os.path.join(src, "Sprites/Enemies.png")).convert("RGBA")
+    cell = lambda im, i, w: im.crop((i * w, 0, i * w + w, im.height))
+    for i in range(13):
+        yield 1 + i, cell(proj, i, 8), 1
+    for i in range(6):
+        yield PLAYER + i, cell(player, i, 16), 2
+    for i in range(42):
+        yield ENEMY + i, cell(enemies, i, 16), 2
+    for i in range(8):
+        yield LETTERS + i, cell(enemies, 42 + i, 16), 2
+    # bosses are 3x2 grids of 16x16 source frames: 50 + 18*level + 6*set
+    for level in range(7):
+        for fs in range(3):
+            boss = Image.new("RGBA", (48, 32))
+            for k in range(6):
+                boss.paste(cell(enemies, 50 + level * 18 + fs * 6 + k, 16), ((k % 3) * 16, (k // 3) * 16))
+            yield boss_slot(level, fs), boss, 2
+
+
+def reduce(im, factor):
+    """Map to PICO-8 colours (None = transparent), shrinking by 2 with a
+    majority vote over each 2x2 block (transparent unless 2+ pixels are opaque)."""
+    px = [[None if im.getpixel((x, y))[3] < 128 else nearest(im.getpixel((x, y))[:3])
+           for x in range(im.width)] for y in range(im.height)]
+    if factor == 1:
+        return px
+    out = []
+    for y in range(0, im.height, 2):
+        row = []
+        for x in range(0, im.width, 2):
+            block = [c for c in (px[y][x], px[y][x + 1], px[y + 1][x], px[y + 1][x + 1]) if c is not None]
+            row.append(Counter(block).most_common(1)[0][0] if len(block) >= 2 else None)
+        out.append(row)
+    return out
 
 
 def nearest(rgb):
@@ -83,19 +132,14 @@ def main():
         lines = f.readlines()
     start, end, sheet = read_gfx(lines)
 
-    for png, fw, fh, frames, first in LAYOUT:
-        im = Image.open(os.path.join(args.src, png)).convert("RGBA")
-        cells_w = fw // 8
-        for n, frame in enumerate(frames):
-            spr = first + n * cells_w
-            ox, oy = (spr % 16) * 8, (spr // 16) * 8
-            if ox + fw > 128 or oy + fh > 128:
-                sys.exit(f"{png} frame {frame} does not fit at sprite {spr}")
-            for y in range(fh):
-                for x in range(fw):
-                    r, g, b, a = im.getpixel((frame * fw + x, y))
-                    c = 0 if a < 128 else nearest((r, g, b))
-                    sheet[oy + y][ox + x] = "%x" % c
+    for spr, im, factor in layout(args.src):
+        px = reduce(im, factor)
+        ox, oy = (spr % 16) * 8, (spr // 16) * 8
+        if ox + len(px[0]) > 128 or oy + len(px) > 128:
+            sys.exit(f"art for sprite {spr} does not fit on the sheet")
+        for y, row in enumerate(px):
+            for x, c in enumerate(row):
+                sheet[oy + y][ox + x] = "%x" % (c or 0)
 
     lines[start:end] = ["".join(r) + "\n" for r in sheet]
     with open(CART, "w") as f:

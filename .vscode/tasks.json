@@ -6,11 +6,20 @@
       "detail": "Launch PICO-8 with starhopper.p8 (Ctrl+R inside PICO-8 reloads your .lua edits)",
       "type": "process",
       "command": "/Users/rowe/Software/pico-8/PICO-8.app/Contents/MacOS/pico8",
-      "args": ["-run", "${workspaceFolder}/starhopper.p8"],
+      "args": [
+        "-run",
+        "${workspaceFolder}/starhopper.p8"
+      ],
       "isBackground": true,
       "problemMatcher": [],
-      "group": { "kind": "build", "isDefault": true },
-      "presentation": { "reveal": "silent", "panel": "dedicated" }
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated"
+      }
     },
     {
       "label": "Snapshot (headless)",
@@ -26,6 +35,46 @@
       "type": "shell",
       "command": "python3 tools/import_gfx.py",
       "problemMatcher": []
+    },
+    {
+      "label": "Convert music from RPDemo",
+      "detail": "Regenerate music/*.p8 from the RP6502 VGM files",
+      "type": "shell",
+      "command": "python3 tools/vgm2p8.py all",
+      "problemMatcher": []
+    },
+    {
+      "label": "Play a tune",
+      "detail": "Open one music cart in PICO-8",
+      "type": "process",
+      "command": "/Users/rowe/Software/pico-8/PICO-8.app/Contents/MacOS/pico8",
+      "args": [
+        "-run",
+        "${workspaceFolder}/music/${input:tune}.p8"
+      ],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "tune",
+      "type": "pickString",
+      "description": "Tune",
+      "options": [
+        "title",
+        "level_01",
+        "level_02",
+        "level_03",
+        "level_04",
+        "level_05",
+        "level_06",
+        "level_07",
+        "boss",
+        "bossfinal",
+        "bonus",
+        "victory",
+        "gameover"
+      ]
     }
   ]
 }

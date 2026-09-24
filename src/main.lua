@@ -4,6 +4,7 @@ function _init()
  stars_init()
  player_init()
  shots_init()
+ music_play("title")
 end
 
 function _update60()

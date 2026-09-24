@@ -9,7 +9,9 @@ A PICO-8 port of Star Hopper, originally written for the Picocomputer 6502
 |---|---|
 | `starhopper.p8` | The cart: `#include`s the Lua in `src/`, plus the sprite sheet, sfx and music |
 | `src/*.lua` | Game code. Edit these in VS Code |
-| `tools/import_gfx.py` | Converts the RP6502 PNGs into the cart's `__gfx__`, matching colors to the PICO-8 palette |
+| `music/*.p8` | One cart per tune, holding its sfx and music patterns. Run one in PICO-8 to hear it |
+| `tools/import_gfx.py` | Converts the RP6502 PNGs into the cart's `__gfx__`: matches colors to the PICO-8 palette and halves 16×16 art to 8×8 |
+| `tools/vgm2p8.py` | Converts the RP6502 VGM tunes into `music/*.p8` |
 | `tools/snap.py` | Runs the cart headless for N frames, prints runtime errors and saves `snap.png` |
 
 ## Workflow
@@ -27,12 +29,46 @@ From the PICO-8 console you can also run `load starhopper/starhopper`, because
 
 Keep code lowercase. PICO-8 shows uppercase letters as glyphs.
 
+## Graphics
+
+All art is 8×8, and bosses are 24×16. `tools/import_gfx.py` shrinks the original
+16×16 art with a majority vote over each 2×2 block. That makes a usable first
+pass; touch up sprites in PICO-8's sprite editor, but re-running the tool
+overwrites the cells it owns (see the sheet map at the top of the script).
+The map is unused, so sprites 128–255 hold art too.
+
+## Music
+
+The OPL2 tunes share one channel layout, so the conversion is mechanical:
+
+| OPL2 | PICO-8 |
+|---|---|
+| CH0 lead | P0, square |
+| CH1 lead/arp | P1, organ |
+| CH2 bass | P2, tilted saw |
+| CH3–5 kick, snare, hat | P3, merged; one hit per row, snare > kick > hat |
+| CH6 pad | dropped (`--pad` plays it on P1 where the arp rests) |
+
+Each song is split into 32-row sfx, and repeated phrases are stored once.
+A song needs 12–48 sfx, while a cart has 64 slots in total, so each tune gets
+its own cart in `music/`. `music_play("level_01")` copies that cart's sfx
+0–51 and patterns into memory with `reload()` and starts it. Sfx 52–63 are
+kept for sound effects.
+
+Waveforms, volumes and drum sounds are set at the top of `tools/vgm2p8.py`.
+Re-run `python3 tools/vgm2p8.py all` after changing them.
+
+**Limitation:** PICO-8 only allows loading data from other carts (multi-cart)
+locally and in exported binaries or web builds (up to 16 carts). On the BBS
+and in Splore, a cart can't read other carts, so a BBS release would need the
+music cut down to fit a single cart.
+
 ## Port notes
 
 | RP6502 | PICO-8 | Plan |
 |---|---|---|
-| 320×240, 60 fps | 128×128, `_update60` | Scale positions and speeds by about 0.4. Keep 16×16 player and enemy sprites, or shrink to 8×8 |
+| 320×240, 60 fps | 128×128, `_update60` | Positions and speeds scaled by 0.4. All sprites 8×8 |
 | 9k lines of C | 8192-token limit | Hardware code (XRAM, OPL, VGM, gamepad mapper, tile planes) is dropped. Enemy and boss logic becomes table-driven |
-| 176 enemy frames of 16×16 | 128 sprites of 8×8, or 256 without map | Fewer animation frames, recolor with `pal()`, redraw bosses smaller |
+| 176 enemy frames of 16×16 | 256 sprites of 8×8 (no map) | Every frame halved: 195 sprites used |
 | BG/FG tile starfields | Procedural `line()` stars | Done |
-| 13 OPL2 VGM tracks, generated SFX | 64 sfx, 64 music patterns | Rewrite about 4 tunes by hand in the PICO-8 tracker |
+| 13 OPL2 VGM tracks, generated SFX | 64 sfx, 64 music patterns | Auto-converted, one cart per tune (see Music) |
