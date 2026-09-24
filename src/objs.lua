@@ -8,8 +8,9 @@ function objs_init()
  objs,pick_i={},0
 end
 
+-- pool of 64 (the original had 32 slots)
 function obj(k,x,y,vx,vy,f)
- if #objs<32 then
+ if #objs<64 then
   local o={k=k,x=x,y=y,vx=vx,vy=vy,f=f,t=0}
   add(objs,o)
   return o

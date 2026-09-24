@@ -12,7 +12,7 @@ A PICO-8 port of Star Hopper, originally written for the Picocomputer 6502
 | `music/*.p8` | One cart per tune, holding its sfx and music patterns. Run one in PICO-8 to hear it |
 | `tools/import_gfx.py` | Converts the RP6502 PNGs into the cart's `__gfx__`: matches colors to the PICO-8 palette and halves 16×16 art to 8×8 |
 | `tools/vgm2p8.py` | Converts the RP6502 VGM tunes into `music/*.p8` |
-| `tools/make_sfx.py` | Writes the 11 sound effects into sfx 52–62, re-creating the original's OPL2 sweeps and chimes |
+| `tools/make_sfx.py` | Writes the sound effects into sfx 52–63, re-creating the original's OPL2 sweeps and chimes |
 | `tools/snap.py` | Runs the cart headless for N frames, prints runtime errors and saves `snap.png` |
 | `tools/autopilot.lua` | Invincible auto-play for `snap.py`, logging each wave: `python3 tools/snap.py --frames 20000 --each @tools/autopilot.lua` |
 | `tools/bosstest.lua` | Invincible boss-fight autopilot for `snap.py` (set `bl=<level>` first) |
@@ -66,7 +66,7 @@ PICO-8 waveform sounds. `MUSIC_GAIN`, the trims, waveforms and drum sounds
 are at the top of `tools/vgm2p8.py`.
 Re-run `python3 tools/vgm2p8.py all` after changing them.
 
-Sound effects live in sfx 52–62 of the main cart and play on channel 3, which
+Sound effects live in sfx 52–63 of the main cart and play on channel 3, which
 the level and boss tunes leave empty. On the title, bonus and end screens they
 briefly replace the drums. The destroyed and hit sounds are tuneful arpeggios
 rather than the original's noisy FM sweeps. The original's priority tiers still apply:
@@ -86,3 +86,14 @@ music cut down to fit a single cart.
 | 176 enemy frames of 16×16 | 256 sprites of 8×8 (no map) | Every frame halved: 195 sprites used |
 | BG/FG tile starfields | Procedural `line()` stars | Done |
 | 13 OPL2 VGM tracks, generated SFX | 64 sfx, 64 music patterns | Auto-converted, one cart per tune (see Music); SFX re-created in sfx 52–62 |
+
+### Changes from the original
+
+- Bosses are tougher: a hit leaves the boss flashing and invulnerable for 40
+  frames, they tour 16 pivots (reaching further down the screen, faster on
+  later levels), ramming one costs 12 health instead of 4, and a hit makes a
+  sound.
+- 64 slots for enemy bullets, asteroids, pickups and explosions (the
+  original had 32), so full bullet rings come out.
+- Level and boss music have no drums; channel 3 is kept for sound effects.
+- Hit and destroyed sounds are tuneful arpeggios instead of noise sweeps.

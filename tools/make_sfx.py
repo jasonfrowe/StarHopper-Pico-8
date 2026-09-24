@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write Star Hopper's sound effects into sfx 52-62 of starhopper.p8.
+"""Write Star Hopper's sound effects into sfx 52-63 of starhopper.p8.
 
 The RP6502 effects are procedural OPL2 clips (RPDemo/tools/generate_sfx.py):
 pitch sweeps, re-struck chime notes and volume tremolos. They are described
@@ -8,9 +8,9 @@ resolution; OPL envelopes become a linear volume ramp. Music owns sfx 0-51
 and peaks at volume 5 (see MUSIC_GAIN in vgm2p8.py), so effects start at
 6-7 to sit on top of it.
 
-Slots are ordered by the original's priority tiers (fire < pickup/tally/low
-energy < enemy destroyed < player hit/die, extra life, fanfares), which
-src/sound.lua relies on. It also needs each effect's length: this script
+Each effect has a priority tier (fire < pickup/tally/low energy < enemy
+destroyed, boss hit < player hit/die, extra life, fanfares), which
+src/sound.lua uses. It also needs each effect's length: this script
 prints the Lua table line to paste there.
 
 Usage:  python3 tools/make_sfx.py
@@ -56,6 +56,7 @@ SFX = [
     (59, "plyrdie", 4, 3, 3, [("arp", "C6 G5 D#5 C5 G4 D#4 C4 G3 D#3 C3", 60, 7, 2)]),
     (60, "xtralife", 4, 3, 5, [("trem", 740, (0, 1, 2, 3, 5, 8, 12, 16, 12, 8, 5, 3, 2, 1, 0), 9, 6, 7)]),
     (61, "lvlclear", 4, 3, 5, chime((C5, E5, G5, C6), 140, 7)),
+    (63, "bosshit", 3, 1, 4, [("arp", "G6 D6 G5", 25, 7, 5)]),
     (62, "victory", 4, 6, 5, chime((C5, E5, G5, C6, G5, C6), 130, 7)
      + [("trem", E6, (0, 2, 5, 9, 14, 9, 5, 2), 10, 8, 7)]),
 ]
@@ -113,7 +114,7 @@ def main():
     rows = m.group(1).splitlines() if m else []
     rows += [line([], 16)] * (64 - len(rows))
     tiers, lens = [], []
-    for slot, name, tier, speed, wave, segs in SFX:
+    for slot, name, tier, speed, wave, segs in sorted(SFX):
         notes, secs = build(speed, wave, segs)
         rows[slot] = line(notes, speed)
         tiers.append(tier)

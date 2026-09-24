@@ -3,9 +3,11 @@
 -- grey when armoured, yellow when it can be hurt, red while flashing.
 -- x speeds are rp6502 x 0.4, y speeds x 0.55 (the boss moves along one axis at a time)
 
--- the tour of 8 pivots between waves
-bpx=split"3,52,101,101,52,3,3,52"
-bpy=split"8,8,15,21,21,15,21,8"
+-- the tour between waves: 16 pivots sweeping the width and dipping to y=40
+-- (the original's 8 stayed above y=21). each boss starts at a different
+-- pivot and later bosses tour faster.
+bpx=split"52,101,77,52,28,3,28,52,77,101,101,52,3,3,28,52"
+bpy=split"8,8,22,36,22,8,30,14,30,8,24,40,24,8,16,8"
 
 function approach(a,b,s)
  return a<b and min(a+s,b) or max(a-s,b)
@@ -13,7 +15,8 @@ end
 
 function boss_start()
  bv=min(lvl,7)
- bx,by,bhp,bmode,bpiv=52,-16,48,"enter",1
+ bx,by,bhp,bmode=52,-16,48,"enter"
+ bp0,bspd=bv*5%16+1,1+bv*.08
  btime,bwt,bwc,bcyc,bfire,bvol,bflash,bset,banim,b6=0,180,0,0,0,0,0,0,0,0
  bwave,bfail=false,false
  -- level 2's boss has a wider weak spot
@@ -60,14 +63,14 @@ function boss_update()
  local tx=mid(3,px-8,101)
  if bmode=="enter" then
   by+=1.1
-  if (by>=8) by,bmode,bpiv=8,"pivot",1
+  if (by>=8) by,bmode,bpiv=8,"pivot",bp0
  elseif bmode=="dive" then
   -- boss 2: out of the top, back up from under the player
   by-=1.67
   if bph==0 and by<=-16 then
    bx,by,bph=tx,130,1
   elseif bph==1 and by<=8 then
-   by,bmode,bpiv=8,"pivot",1
+   by,bmode,bpiv=8,"pivot",bp0
   end
  elseif bmode=="drop" then
   -- boss 5: line up with the player, then fall through the screen twice
@@ -92,12 +95,12 @@ function boss_update()
    if (bx==bsx) bph=2
   else
    by-=1.67
-   if (by<=8) by,bmode,bpiv=8,"pivot",1
+   if (by<=8) by,bmode,bpiv=8,"pivot",bp0
   end
  else
   local x,y=bpx[bpiv],bpy[bpiv]
-  bx,by=approach(bx,x,1.2),approach(by,y,1.1)
-  if (bx==x and by==y) bpiv=bpiv%8+1
+  bx,by=approach(bx,x,1.2*bspd),approach(by,y,1.1*bspd)
+  if (bx==x and by==y) bpiv=bpiv%16+1
  end
 
  -- attacks only while touring: 3-volley bursts from the twin guns,
@@ -132,16 +135,20 @@ function boss_update()
   bcyc,bfire,b6,bset=0,0,0,0
  end
 
- -- weak spot: boss 4 is only vulnerable while its minions are alive
+ -- weak spot: boss 4 is only vulnerable while its minions are alive.
+ -- a hit leaves the boss flashing and shaking, and invulnerable, for 40 frames
  bvul=bv!=4 or live_enemies()>0
- if bvul and shot_hit(bx+bwx,by+13,bww,3) then
+ if bflash>0 then
+  bflash-=1
+ elseif bvul and shot_hit(bx+bwx,by+13,bww,3) then
   bhp-=4
-  bflash=12
+  bflash=40
   score_add(100*mult)
+  snd(s_bhit)
  end
- if (bflash>0) bflash-=1
+ -- ramming the boss costs a quarter of the ship's health
  if can_hurt() and overlap(bx+bwx,by,bww,16,px+1,py+1,6,6) then
-  player_hurt(4)
+  player_hurt(12)
  end
 
  if bhp<=0 or btime>=14400 then
@@ -178,9 +185,12 @@ end
 
 function boss_draw()
  if (not boss) return
- local n=(bv-1)*3+bset
- if (bvul) pal(15,bflash%6>2 and 8 or 10)
- spr(96+n\5*32+n%5*3,bx,by,3,2)
+ local n,s=(bv-1)*3+bset,bflash%4
+ if (bvul) pal(15,10)
+ if (bflash>0 and s<2) pal(split"7,7,7,7,7,7,7,7,7,7,7,7,7,7,7")
+ if (bflash==0) s=4
+ spr(96+n\5*32+n%5*3,bx+split"-1,1,0,0,0"[s+1],by+split"0,0,-1,1,0"[s+1],3,2)
+ pal()
  pal(15,5)
  -- boss health: 1px per hp
  if (bhp>0) rectfill(40,ht+1,39+bhp,ht+2,8)
