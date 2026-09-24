@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run in PICO-8",
+      "detail": "Launch PICO-8 with starhopper.p8 (Ctrl+R inside PICO-8 reloads your .lua edits)",
+      "type": "process",
+      "command": "/Users/rowe/Software/pico-8/PICO-8.app/Contents/MacOS/pico8",
+      "args": ["-run", "${workspaceFolder}/starhopper.p8"],
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "silent", "panel": "dedicated" }
+    },
+    {
+      "label": "Snapshot (headless)",
+      "detail": "Run 120 frames without a window, report runtime errors, save snap.png",
+      "type": "shell",
+      "command": "python3 tools/snap.py --frames 120 && open snap.png",
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "Import graphics from RPDemo",
+      "detail": "Convert the RP6502 PNGs listed in tools/import_gfx.py into the cart's sprite sheet",
+      "type": "shell",
+      "command": "python3 tools/import_gfx.py",
+      "problemMatcher": []
+    }
+  ]
+}

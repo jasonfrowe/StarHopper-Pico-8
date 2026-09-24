@@ -1,0 +1,7 @@
+{
+  // PICO-8 style: one-space indents keep lines short in the 32-column editor.
+  "[pico-8]": { "editor.tabSize": 1, "editor.insertSpaces": true, "editor.detectIndentation": false },
+  "[pico-8-lua]": { "editor.tabSize": 1, "editor.insertSpaces": true, "editor.detectIndentation": false },
+  "files.associations": { "*.lua": "pico-8-lua" },
+  "files.exclude": { "snap_tmp.p8": true }
+}
