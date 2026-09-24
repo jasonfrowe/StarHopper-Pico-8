@@ -86,14 +86,13 @@ function boss_update()
    end
   end
  elseif bmode=="slide" then
-  -- boss 3: sink to the bottom, slide along it, rise again, steering
-  -- towards the player all the way to ram them
-  bx=approach(bx,tx,1.2)
+  -- boss 3: straight down, chase the player along the bottom until
+  -- lined up (or 1.5s), then straight back up to ram them
   if bph==0 then
    by+=1.67
    if (by>=112) by,bph,bsx=112,1,0
   elseif bph==1 then
-   -- chase along the bottom until lined up (or 1.5s)
+   bx=approach(bx,tx,1.2)
    bsx+=1
    if (abs(bx-tx)<1 or bsx>90) bph=2
   else
@@ -122,11 +121,18 @@ function boss_update()
  end
 
  -- attacks only while touring: 3-volley bursts from the twin guns,
- -- started when the player is lined up. boss 6 is faster and adds a centre gun.
+ -- started when the player is lined up (every 100 frames, the original
+ -- waited 180), plus an aimed shot every 90-bv*6 frames. boss 6 bursts
+ -- faster and adds a centre gun.
  if bmode=="pivot" then
-  local cyc,iv=180,8
+  local cyc,iv=100,8
+  bshot=(bshot or 0)+1
+  if bshot>=90-bv*6 then
+   fire_aimed({x=bx+8,y=by+12},em)
+   bshot=0
+  end
   if bv==6 then
-   cyc,iv=120,3
+   cyc,iv=70,3
    b6-=1
    if b6<=0 then
     ebullet(bx+8,by+16,0,1.67)
@@ -138,7 +144,7 @@ function boss_update()
   if bcyc<54 then
    bset=2
    bfire-=1
-   if bvol<3 and bfire<=0 and (bvol>0 or abs(px-bx-8)<=7) then
+   if bvol<3 and bfire<=0 and (bvol>0 or abs(px-bx-8)<=12) then
     ebullet(bx+2,by+16,0,1.67,9)
     ebullet(bx+14,by+16,0,1.67,10)
     bvol+=1

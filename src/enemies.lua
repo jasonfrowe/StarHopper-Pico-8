@@ -151,7 +151,10 @@ function enemy_move(e)
    if wshots>0 and e.y>=ht+11 and e.y<101 and rnd(64)<1 and fire_aimed(e,em) then
     wshots-=1
    end
-   if (abs(e.x-px)<=3 and e.y>=ht+13) e.ph=1
+   -- dive when crossing the player's column, but only from a third of the
+   -- way down (the original allowed it near the top; waves centred on the
+   -- player would then all dive at once instead of zig-zagging)
+   if (abs(e.x-px)<=3 and e.y>=48) e.ph=1
   else
    e.y+=ed
   end

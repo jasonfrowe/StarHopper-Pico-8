@@ -95,11 +95,15 @@ music cut down to fit a single cart.
   sound.
 - Bosses sometimes dodge: a shot lined up under the weak spot has a 50%
   chance to make the boss reverse along its tour, at most once every 1.5 s.
-- The level 3 boss steers towards the player through its whole
-  sink-slide-rise attack, trying to ram them.
+- The level 3 boss's attack chases the player along the bottom of the
+  screen (straight down, across until lined up, straight up) to ram them.
+- Bosses fire more: the twin-gun bursts come every 100 frames (was 180) and
+  start when the player is within 12 px (was 7), plus an aimed shot every
+  1.5 s (boss 1) down to 0.8 s (boss 7).
 - Type 4 enemies dive 1.5x faster.
 - Zig-zag (type 0) waves are centred on the player's position when they
-  spawn, instead of a random column.
+  spawn, instead of a random column, and only dive from a third of the way
+  down the screen.
 - 64 slots for enemy bullets, asteroids, pickups and explosions (the
   original had 32), so full bullet rings come out.
 - Level and boss music have no drums; channel 3 is kept for sound effects.
